@@ -1,8 +1,7 @@
 import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
-import { AppController } from './app.controller.js';
-import { AppService } from './app.service.js';
+import { AppApiModule } from './api/app/app.module.js';
 import { ResponseInterceptor } from './response.interceptor.js';
 import { HttpExceptionFilter } from './http-exception.filter.js';
 
@@ -12,10 +11,10 @@ import { HttpExceptionFilter } from './http-exception.filter.js';
       isGlobal: true,
       envFilePath: ['.env'],
     }),
+    AppApiModule,
   ],
-  controllers: [AppController],
+  controllers: [],
   providers: [
-    AppService,
     {
       provide: APP_INTERCEPTOR,
       useClass: ResponseInterceptor,
