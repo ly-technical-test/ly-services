@@ -6,6 +6,23 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 
+export function buildErrorResponse(
+  code: number,
+  message: string,
+  request: { method: string; originalUrl: string },
+) {
+  return {
+    code,
+    data: null,
+    message,
+    metadata: {
+      responseAt: new Date().toISOString(),
+      method: request.method,
+      route: request.originalUrl,
+    },
+  };
+}
+
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
   catch(exception: any, host: ArgumentsHost) {
@@ -23,15 +40,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
         ? 'route_not_found'
         : exception.message || 'internal_server_error';
 
-    response.status(status).json({
-      code: status,
-      data: null,
-      message,
-      metadata: {
-        responseAt: new Date().toISOString(),
-        method: request.method,
-        route: request.originalUrl,
-      },
-    });
+    response
+      .status(status)
+      .json(buildErrorResponse(status, message, request));
   }
 }

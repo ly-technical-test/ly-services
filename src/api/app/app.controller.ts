@@ -1,4 +1,4 @@
-import { Controller, Get, All, NotFoundException } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service.js';
 
 @Controller()
@@ -8,10 +8,5 @@ export class AppController {
   @Get('ping')
   ping(): string {
     return this.appService.ping();
-  }
-
-  @All('*')
-  fallback() {
-    throw new NotFoundException();
   }
 }

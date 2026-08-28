@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
 import { AppApiModule } from './api/app/app.module.js';
+import { AuthApiModule } from './api/auth/auth.module.js';
 import { ResponseInterceptor } from './response.interceptor.js';
 import { HttpExceptionFilter } from './http-exception.filter.js';
 
@@ -11,7 +13,15 @@ import { HttpExceptionFilter } from './http-exception.filter.js';
       isGlobal: true,
       envFilePath: ['.env'],
     }),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        uri: configService.getOrThrow<string>('MONGODB_URI'),
+      }),
+      inject: [ConfigService],
+    }),
     AppApiModule,
+    AuthApiModule,
   ],
   controllers: [],
   providers: [
@@ -26,3 +36,4 @@ import { HttpExceptionFilter } from './http-exception.filter.js';
   ],
 })
 export class AppModule {}
+
