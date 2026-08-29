@@ -16,10 +16,12 @@ describe('BillingService', () => {
     findOne: jest.fn<any>(),
     find: jest.fn<any>(),
     findById: jest.fn<any>(),
+    countDocuments: jest.fn<any>(),
   };
 
   const mockCustomerModel = {
     findOne: jest.fn<any>(),
+    find: jest.fn<any>(),
   };
 
   const mockUsersService = {
@@ -155,17 +157,64 @@ describe('BillingService', () => {
   });
 
   describe('listCharges', () => {
-    it('returns charges list', async () => {
+    it('returns charges list without filters', async () => {
       const charges = [{ _id: 'charge_1' }, { _id: 'charge_2' }];
-      mockChargeModel.find.mockReturnValue({
-        sort: jest.fn().mockReturnValue({
-          exec: jest.fn<any>().mockResolvedValue(charges),
-        }),
-      });
+      const mockExec = jest.fn<any>().mockResolvedValue(charges);
+      const mockSort = jest.fn().mockReturnValue({ exec: mockExec });
+      mockChargeModel.find.mockReturnValue({ sort: mockSort });
 
       const result = await service.listCharges('507f1f77bcf86cd799439011');
       expect(mockChargeModel.find).toHaveBeenCalledWith({ user: '507f1f77bcf86cd799439011' });
       expect(result).toEqual(charges);
+    });
+
+    it('returns charges list with filters', async () => {
+      const charges = [{ _id: 'charge_1' }];
+      const mockExec = jest.fn<any>().mockResolvedValue(charges);
+      const mockSort = jest.fn().mockReturnValue({ exec: mockExec });
+      mockChargeModel.find.mockReturnValue({ sort: mockSort });
+
+      const customers = [{ _id: 'cust_1' }];
+      mockCustomerModel.find = jest.fn<any>().mockReturnValue({
+        exec: jest.fn<any>().mockResolvedValue(customers),
+      });
+
+      const result = await service.listCharges('507f1f77bcf86cd799439011', 'teste', 'PAID');
+      
+      expect(mockCustomerModel.find).toHaveBeenCalledWith({
+        user: '507f1f77bcf86cd799439011',
+        name: { $regex: 'teste', $options: 'i' }
+      }, '_id');
+      
+      expect(mockChargeModel.find).toHaveBeenCalledWith({
+        user: '507f1f77bcf86cd799439011',
+        status: 'PAID',
+        $or: [
+          { description: { $regex: 'teste', $options: 'i' } },
+          { customer: { $in: ['cust_1'] } },
+        ]
+      });
+      expect(result).toEqual(charges);
+    });
+
+    it('returns paginated charges list with page and limit', async () => {
+      const charges = [{ _id: 'charge_1' }];
+      const mockExec = jest.fn<any>().mockResolvedValue(charges);
+      const mockLimit = jest.fn().mockReturnValue({ exec: mockExec });
+      const mockSkip = jest.fn().mockReturnValue({ limit: mockLimit });
+      const mockSort = jest.fn().mockReturnValue({ skip: mockSkip });
+      mockChargeModel.find.mockReturnValue({ sort: mockSort });
+      mockChargeModel.countDocuments = jest.fn<any>().mockReturnValue({
+        exec: jest.fn<any>().mockResolvedValue(50)
+      });
+
+      const result = await service.listCharges('507f1f77bcf86cd799439011', undefined, undefined, '2', '20');
+      
+      expect(mockChargeModel.find).toHaveBeenCalledWith({ user: '507f1f77bcf86cd799439011' });
+      expect(mockSkip).toHaveBeenCalledWith(20);
+      expect(mockLimit).toHaveBeenCalledWith(20);
+      expect(mockChargeModel.countDocuments).toHaveBeenCalledWith({ user: '507f1f77bcf86cd799439011' });
+      expect(result).toEqual({ data: charges, total: 50, totalPages: 3, page: 2, limit: 20 });
     });
   });
 

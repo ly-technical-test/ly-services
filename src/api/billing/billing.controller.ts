@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards, Request } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards, Request, Query } from '@nestjs/common';
 import { BillingService } from './billing.service.js';
 import { IssueChargeDto } from './dto/issue-charge.dto.js';
 import { PayCardDto } from './dto/pay-card.dto.js';
@@ -29,8 +29,14 @@ export class BillingController {
 
   @Get('list')
   @UseGuards(JwtAuthGuard)
-  async listCharges(@Request() req: any) {
-    return this.billingService.listCharges(req.user.userId);
+  async listCharges(
+    @Request() req: any,
+    @Query('search') search?: string,
+    @Query('status') status?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.billingService.listCharges(req.user.userId, search, status, page, limit);
   }
 
   @Get(':id')

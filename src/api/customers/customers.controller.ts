@@ -15,8 +15,13 @@ export class CustomersController {
   }
 
   @Get()
-  async findAll(@Request() req: any, @Query('search') search?: string) {
-    return this.customersService.findAll(req.user.userId, search);
+  async findAll(
+    @Request() req: any,
+    @Query('search') search?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.customersService.findAll(req.user.userId, search, page, limit);
   }
 
   @Get(':id')

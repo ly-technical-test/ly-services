@@ -52,7 +52,7 @@ export class CustomersService {
     return customer.save();
   }
 
-  async findAll(userId: string, search?: string) {
+  async findAll(userId: string, search?: string, page?: string, limit?: string) {
     const filter: any = { user: userId };
     
     if (search) {
@@ -64,7 +64,28 @@ export class CustomersService {
       ];
     }
     
-    return this.customerModel.find(filter).sort({ createdAt: -1 }).exec();
+    let query = this.customerModel.find(filter).sort({ createdAt: -1 });
+
+    if (page && limit) {
+      let pageNum = parseInt(page, 10) || 1;
+      let limitNum = parseInt(limit, 10) || 10;
+      
+      if (limitNum > 100) limitNum = 100;
+      if (limitNum < 1) limitNum = 1;
+      if (pageNum < 1) pageNum = 1;
+      
+      const skip = (pageNum - 1) * limitNum;
+      
+      const [data, total] = await Promise.all([
+        query.skip(skip).limit(limitNum).exec(),
+        this.customerModel.countDocuments(filter).exec()
+      ]);
+      
+      const totalPages = Math.max(1, Math.ceil(total / limitNum));
+      return { data, total, totalPages, page: pageNum, limit: limitNum };
+    }
+
+    return query.exec();
   }
 
   async findOne(userId: string, id: string) {

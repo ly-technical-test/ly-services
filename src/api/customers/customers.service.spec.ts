@@ -103,6 +103,26 @@ describe('CustomersService', () => {
       expect(mockSort).toHaveBeenCalledWith({ createdAt: -1 });
       expect(result).toEqual(customers);
     });
+
+    it('returns paginated user customers when page and paginate are provided', async () => {
+      const customers = [{ _id: 'cust_1' }];
+      const mockExec = jest.fn<any>().mockResolvedValue(customers);
+      const mockLimit = jest.fn<any>().mockReturnValue({ exec: mockExec });
+      const mockSkip = jest.fn<any>().mockReturnValue({ limit: mockLimit });
+      const mockSort = jest.fn<any>().mockReturnValue({ skip: mockSkip });
+      (MockCustomerModel as any).find.mockReturnValue({ sort: mockSort });
+      (MockCustomerModel as any).countDocuments = jest.fn<any>().mockReturnValue({
+        exec: jest.fn<any>().mockResolvedValue(10)
+      });
+
+      const result = await service.findAll('user_123', undefined, '2', '5');
+      expect((MockCustomerModel as any).find).toHaveBeenCalledWith({ user: 'user_123' });
+      expect(mockSort).toHaveBeenCalledWith({ createdAt: -1 });
+      expect(mockSkip).toHaveBeenCalledWith(5);
+      expect(mockLimit).toHaveBeenCalledWith(5);
+      expect((MockCustomerModel as any).countDocuments).toHaveBeenCalledWith({ user: 'user_123' });
+      expect(result).toEqual({ data: customers, total: 10, totalPages: 2, page: 2, limit: 5 });
+    });
   });
 
   describe('findOne', () => {
