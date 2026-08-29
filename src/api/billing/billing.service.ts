@@ -135,4 +135,34 @@ export class BillingService {
   async listCharges(userId: string) {
     return this.chargeModel.find({ user: userId }).sort({ createdAt: -1 }).exec();
   }
+
+  async getCharge(chargeId: string) {
+    const charge = await this.chargeModel.findById(chargeId).exec();
+    if (!charge) throw new NotFoundException('charge_not_found');
+
+    let response: any = { ...charge.toObject() };
+
+    try {
+      const invoice = await this.lytexApiService.getInvoice(charge.lytexId);
+      
+      if (invoice.paymentMethods) {
+        if (invoice.paymentMethods.pix) {
+          response.pix = {
+            qrcode: invoice.paymentMethods.pix.qrcode,
+          };
+        }
+        if (invoice.paymentMethods.boleto) {
+          response.boleto = {
+            barcode: invoice.paymentMethods.boleto.barcode,
+            digitableLine: invoice.paymentMethods.boleto.digitableLine,
+            ourNumber: invoice.paymentMethods.boleto.ourNumber,
+            emv: invoice.paymentMethods.boleto.qrCode?.emv,
+          };
+        }
+      }
+    } catch (error) {
+    }
+
+    return response;
+  }
 }

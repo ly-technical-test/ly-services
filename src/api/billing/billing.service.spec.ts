@@ -15,6 +15,7 @@ describe('BillingService', () => {
     create: jest.fn<any>(),
     findOne: jest.fn<any>(),
     find: jest.fn<any>(),
+    findById: jest.fn<any>(),
   };
 
   const mockCustomerModel = {
@@ -32,6 +33,7 @@ describe('BillingService', () => {
     simulatePayment: jest.fn<any>(),
     tokenizeCard: jest.fn<any>(),
     payWithCard: jest.fn<any>(),
+    getInvoice: jest.fn<any>(),
   };
 
   beforeEach(async () => {
@@ -164,6 +166,32 @@ describe('BillingService', () => {
       const result = await service.listCharges('507f1f77bcf86cd799439011');
       expect(mockChargeModel.find).toHaveBeenCalledWith({ user: '507f1f77bcf86cd799439011' });
       expect(result).toEqual(charges);
+    });
+  });
+
+  describe('getCharge', () => {
+    it('throws if charge not found', async () => {
+      mockChargeModel.findById.mockReturnValue({ exec: jest.fn<any>().mockResolvedValue(null) });
+      await expect(service.getCharge('charge_1')).rejects.toThrow(NotFoundException);
+    });
+
+    it('returns charge with pix and boleto info', async () => {
+      const chargeDoc = { _id: 'charge_1', lytexId: 'lytex_1', toObject: () => ({ _id: 'charge_1' }) };
+      mockChargeModel.findById.mockReturnValue({ exec: jest.fn<any>().mockResolvedValue(chargeDoc) });
+      
+      const invoice = {
+        paymentMethods: {
+          pix: { qrcode: 'pix_code' },
+          boleto: { barcode: '123', digitableLine: '456', ourNumber: '789', qrCode: { emv: 'boleto_pix' } }
+        }
+      };
+      mockLytexApiService.getInvoice.mockResolvedValue(invoice);
+
+      const result = await service.getCharge('charge_1');
+      expect(mockLytexApiService.getInvoice).toHaveBeenCalledWith('lytex_1');
+      expect(result.pix.qrcode).toBe('pix_code');
+      expect(result.boleto.barcode).toBe('123');
+      expect(result.boleto.emv).toBe('boleto_pix');
     });
   });
 });

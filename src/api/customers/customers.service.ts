@@ -52,8 +52,19 @@ export class CustomersService {
     return customer.save();
   }
 
-  async findAll(userId: string) {
-    return this.customerModel.find({ user: userId }).exec();
+  async findAll(userId: string, search?: string) {
+    const filter: any = { user: userId };
+    
+    if (search) {
+      const sanitized = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      filter.$or = [
+        { name: { $regex: sanitized, $options: 'i' } },
+        { email: { $regex: sanitized, $options: 'i' } },
+        { cpfCnpj: { $regex: sanitized, $options: 'i' } },
+      ];
+    }
+    
+    return this.customerModel.find(filter).sort({ createdAt: -1 }).exec();
   }
 
   async findOne(userId: string, id: string) {

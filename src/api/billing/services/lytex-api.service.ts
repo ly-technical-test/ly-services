@@ -140,4 +140,20 @@ export class LytexApiService {
     }
     return response.json();
   }
+
+  async getInvoice(invoiceId: string): Promise<any> {
+    const token = await this.getLytexToken();
+    const response = await fetch(`${this.lytexBaseUrl}/invoices/${invoiceId}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      throw new InternalServerErrorException(`lytex_invoice_fetch_failed: ${err}`);
+    }
+    return response.json();
+  }
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Param, Body, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Put, Param, Body, UseGuards, Request, Query } from '@nestjs/common';
 import { CustomersService } from './customers.service.js';
 import { CreateCustomerDto } from './dto/create-customer.dto.js';
 import { UpdateCustomerDto } from './dto/update-customer.dto.js';
@@ -15,8 +15,8 @@ export class CustomersController {
   }
 
   @Get()
-  async findAll(@Request() req: any) {
-    return this.customersService.findAll(req.user.userId);
+  async findAll(@Request() req: any, @Query('search') search?: string) {
+    return this.customersService.findAll(req.user.userId, search);
   }
 
   @Get(':id')

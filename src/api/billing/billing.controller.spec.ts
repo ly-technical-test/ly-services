@@ -13,6 +13,7 @@ describe('BillingController', () => {
     simulatePayment: jest.fn<any>(),
     payWithCreditCard: jest.fn<any>(),
     listCharges: jest.fn<any>(),
+    getCharge: jest.fn<any>(),
   };
 
   beforeEach(async () => {
@@ -90,6 +91,17 @@ describe('BillingController', () => {
 
       const result = await controller.listCharges(req);
       expect(service.listCharges).toHaveBeenCalledWith('user_123');
+      expect(result).toEqual(expected);
+    });
+  });
+
+  describe('getCharge', () => {
+    it('returns charge details', async () => {
+      const expected = { _id: 'charge_1', amount: 100 };
+      mockBillingService.getCharge.mockResolvedValue(expected);
+
+      const result = await controller.getCharge('charge_1');
+      expect(service.getCharge).toHaveBeenCalledWith('charge_1');
       expect(result).toEqual(expected);
     });
   });

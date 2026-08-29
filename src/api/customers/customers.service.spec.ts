@@ -73,14 +73,34 @@ describe('CustomersService', () => {
   });
 
   describe('findAll', () => {
-    it('returns user customers', async () => {
+    it('returns user customers without search', async () => {
       const customers = [{ _id: 'cust_1' }];
-      (MockCustomerModel as any).find.mockReturnValue({
-        exec: jest.fn<any>().mockResolvedValue(customers),
-      });
+      const mockExec = jest.fn<any>().mockResolvedValue(customers);
+      const mockSort = jest.fn<any>().mockReturnValue({ exec: mockExec });
+      (MockCustomerModel as any).find.mockReturnValue({ sort: mockSort });
 
       const result = await service.findAll('user_123');
       expect((MockCustomerModel as any).find).toHaveBeenCalledWith({ user: 'user_123' });
+      expect(mockSort).toHaveBeenCalledWith({ createdAt: -1 });
+      expect(result).toEqual(customers);
+    });
+
+    it('returns user customers with search filter', async () => {
+      const customers = [{ _id: 'cust_1' }];
+      const mockExec = jest.fn<any>().mockResolvedValue(customers);
+      const mockSort = jest.fn<any>().mockReturnValue({ exec: mockExec });
+      (MockCustomerModel as any).find.mockReturnValue({ sort: mockSort });
+
+      const result = await service.findAll('user_123', 'term');
+      expect((MockCustomerModel as any).find).toHaveBeenCalledWith({
+        user: 'user_123',
+        $or: [
+          { name: { $regex: 'term', $options: 'i' } },
+          { email: { $regex: 'term', $options: 'i' } },
+          { cpfCnpj: { $regex: 'term', $options: 'i' } },
+        ]
+      });
+      expect(mockSort).toHaveBeenCalledWith({ createdAt: -1 });
       expect(result).toEqual(customers);
     });
   });
