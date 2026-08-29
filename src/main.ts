@@ -37,7 +37,7 @@ async function bootstrap() {
     }
 
     entry.count++;
-    if (entry.count > 30) return res.status(429).json(buildErrorResponse(429, 'too_many_requests', req));
+    if (entry.count > 100) return res.status(429).json(buildErrorResponse(429, 'too_many_requests', req));
 
     return next();
   });
@@ -46,7 +46,7 @@ async function bootstrap() {
 
   const httpAdapter = app.getHttpAdapter();
   httpAdapter.getInstance().use((req: any, res: any) => {
-    res.status(404).json(buildErrorResponse(404, 'route_not_found', req));
+    res.status(404).json(buildErrorResponse(404, 'not_found', req));
   });
 
   const configService = app.get(ConfigService);

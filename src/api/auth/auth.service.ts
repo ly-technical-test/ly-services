@@ -47,4 +47,23 @@ export class AuthService {
       },
     };
   }
+
+  async getProfile(userId: string) {
+    const user = await this.usersService.findById(userId);
+    if (!user) throw new UnauthorizedException('user_not_found');
+    const userObj = user.toObject();
+    delete userObj.passwordHash;
+    return userObj;
+  }
+
+  async updateProfile(userId: string, data: any) {
+    const user = await this.usersService.findById(userId);
+    if (!user) throw new UnauthorizedException('user_not_found');
+
+    const updatedUser = await this.usersService.update(userId, data);
+    
+    const userObj = updatedUser?.toObject();
+    delete userObj.passwordHash;
+    return userObj;
+  }
 }

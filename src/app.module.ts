@@ -4,6 +4,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppApiModule } from './api/app/app.module.js';
 import { AuthApiModule } from './api/auth/auth.module.js';
+import { BillingApiModule } from './api/billing/billing.module.js';
+import { CustomersModule } from './api/customers/customers.module.js';
 import { ResponseInterceptor } from './response.interceptor.js';
 import { HttpExceptionFilter } from './http-exception.filter.js';
 
@@ -17,11 +19,14 @@ import { HttpExceptionFilter } from './http-exception.filter.js';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         uri: configService.getOrThrow<string>('MONGODB_URI'),
+        dbName: configService.get<string>('MONGODB_DB_NAME'),
       }),
       inject: [ConfigService],
     }),
     AppApiModule,
     AuthApiModule,
+    BillingApiModule,
+    CustomersModule,
   ],
   controllers: [],
   providers: [

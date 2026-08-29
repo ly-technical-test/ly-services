@@ -37,7 +37,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     const message =
       status === HttpStatus.NOT_FOUND
-        ? 'route_not_found'
+        ? 'not_found'
         : exception.message || 'internal_server_error';
 
     response

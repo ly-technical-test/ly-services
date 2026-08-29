@@ -5,6 +5,7 @@ import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import bcrypt from 'bcrypt';
 import { AuthService } from './auth.service.js';
 import { UsersService } from '../users/users.service.js';
+import { LytexApiService } from '../billing/services/lytex-api.service.js';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -15,7 +16,12 @@ describe('AuthService', () => {
   };
 
   const mockJwtService = {
-    sign: jest.fn<any>().mockReturnValue('mock_jwt_token'),
+    sign: jest.fn().mockReturnValue('mock_jwt_token'),
+  };
+
+  const mockLytexApiService = {
+    createClient: jest.fn(),
+    updateClient: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -24,6 +30,7 @@ describe('AuthService', () => {
         AuthService,
         { provide: UsersService, useValue: mockUsersService },
         { provide: JwtService, useValue: mockJwtService },
+        { provide: LytexApiService, useValue: mockLytexApiService },
       ],
     }).compile();
 

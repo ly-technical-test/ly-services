@@ -6,11 +6,13 @@ import { AuthService } from './auth.service.js';
 import { AuthController } from './auth.controller.js';
 import { JwtStrategy } from './strategies/jwt.strategy.js';
 import { UsersModule } from '../users/users.module.js';
+import { BillingApiModule } from '../billing/billing.module.js';
 
 @Module({
   imports: [
     UsersModule,
-    PassportModule,
+    BillingApiModule,
+    PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

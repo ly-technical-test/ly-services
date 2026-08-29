@@ -11,8 +11,15 @@ export class UsersService {
     return this.userModel.findOne({ email: email.toLowerCase().trim() }).exec();
   }
 
-  async create(userData: { name: string; email: string; passwordHash: string }): Promise<User> {
+  async findById(id: string): Promise<User | null> {
+    return this.userModel.findById(id).exec();
+  }
+
+  async create(userData: Partial<User>): Promise<User> {
     return this.userModel.create(userData);
   }
-}
 
+  async update(id: string, updateData: Partial<User>): Promise<User | null> {
+    return this.userModel.findByIdAndUpdate(id, updateData, { new: true }).exec();
+  }
+}
