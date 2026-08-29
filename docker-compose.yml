@@ -20,23 +20,6 @@ services:
       - ./:/app
       - /app/node_modules
 
-  test:
-    image: ${APP_NAME}-${ENVIRONMENT}-test
-    hostname: ${APP_NAME}-${ENVIRONMENT}-test
-    build:
-      context: .
-      dockerfile: .docker/Dockerfile.${DOCKER_SUFFIX}
-    env_file:
-      - .env
-    networks:
-      microservices:
-        aliases:
-          - ${APP_NAME}-${ENVIRONMENT}-test
-    volumes:
-      - ./:/app
-      - /app/node_modules
-    command: npm run test
-
 networks:
   microservices:
     external: true
