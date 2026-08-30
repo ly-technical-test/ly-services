@@ -73,15 +73,55 @@ describe('CustomersService', () => {
   });
 
   describe('findAll', () => {
-    it('returns user customers', async () => {
+    it('returns user customers without search', async () => {
       const customers = [{ _id: 'cust_1' }];
-      (MockCustomerModel as any).find.mockReturnValue({
-        exec: jest.fn<any>().mockResolvedValue(customers),
-      });
+      const mockExec = jest.fn<any>().mockResolvedValue(customers);
+      const mockSort = jest.fn<any>().mockReturnValue({ exec: mockExec });
+      (MockCustomerModel as any).find.mockReturnValue({ sort: mockSort });
 
       const result = await service.findAll('user_123');
       expect((MockCustomerModel as any).find).toHaveBeenCalledWith({ user: 'user_123' });
+      expect(mockSort).toHaveBeenCalledWith({ createdAt: -1 });
       expect(result).toEqual(customers);
+    });
+
+    it('returns user customers with search filter', async () => {
+      const customers = [{ _id: 'cust_1' }];
+      const mockExec = jest.fn<any>().mockResolvedValue(customers);
+      const mockSort = jest.fn<any>().mockReturnValue({ exec: mockExec });
+      (MockCustomerModel as any).find.mockReturnValue({ sort: mockSort });
+
+      const result = await service.findAll('user_123', 'term');
+      expect((MockCustomerModel as any).find).toHaveBeenCalledWith({
+        user: 'user_123',
+        $or: [
+          { name: { $regex: 'term', $options: 'i' } },
+          { email: { $regex: 'term', $options: 'i' } },
+          { cpfCnpj: { $regex: 'term', $options: 'i' } },
+        ]
+      });
+      expect(mockSort).toHaveBeenCalledWith({ createdAt: -1 });
+      expect(result).toEqual(customers);
+    });
+
+    it('returns paginated user customers when page and paginate are provided', async () => {
+      const customers = [{ _id: 'cust_1' }];
+      const mockExec = jest.fn<any>().mockResolvedValue(customers);
+      const mockLimit = jest.fn<any>().mockReturnValue({ exec: mockExec });
+      const mockSkip = jest.fn<any>().mockReturnValue({ limit: mockLimit });
+      const mockSort = jest.fn<any>().mockReturnValue({ skip: mockSkip });
+      (MockCustomerModel as any).find.mockReturnValue({ sort: mockSort });
+      (MockCustomerModel as any).countDocuments = jest.fn<any>().mockReturnValue({
+        exec: jest.fn<any>().mockResolvedValue(10)
+      });
+
+      const result = await service.findAll('user_123', undefined, '2', '5');
+      expect((MockCustomerModel as any).find).toHaveBeenCalledWith({ user: 'user_123' });
+      expect(mockSort).toHaveBeenCalledWith({ createdAt: -1 });
+      expect(mockSkip).toHaveBeenCalledWith(5);
+      expect(mockLimit).toHaveBeenCalledWith(5);
+      expect((MockCustomerModel as any).countDocuments).toHaveBeenCalledWith({ user: 'user_123' });
+      expect(result).toEqual({ data: customers, total: 10, totalPages: 2, page: 2, limit: 5 });
     });
   });
 

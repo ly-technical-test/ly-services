@@ -13,6 +13,7 @@ describe('BillingController', () => {
     simulatePayment: jest.fn<any>(),
     payWithCreditCard: jest.fn<any>(),
     listCharges: jest.fn<any>(),
+    getCharge: jest.fn<any>(),
   };
 
   beforeEach(async () => {
@@ -83,13 +84,44 @@ describe('BillingController', () => {
   });
 
   describe('listCharges', () => {
-    it('returns list', async () => {
+    it('returns list without filters', async () => {
       const req = { user: { userId: 'user_123' } };
       const expected = [{ _id: 'charge_1' }];
       mockBillingService.listCharges.mockResolvedValue(expected);
 
       const result = await controller.listCharges(req);
-      expect(service.listCharges).toHaveBeenCalledWith('user_123');
+      expect(service.listCharges).toHaveBeenCalledWith('user_123', undefined, undefined, undefined, undefined);
+      expect(result).toEqual(expected);
+    });
+
+    it('returns list with search and status filters', async () => {
+      const req = { user: { userId: 'user_123' } };
+      const expected = [{ _id: 'charge_1' }];
+      mockBillingService.listCharges.mockResolvedValue(expected);
+
+      const result = await controller.listCharges(req, 'test', 'PENDING');
+      expect(service.listCharges).toHaveBeenCalledWith('user_123', 'test', 'PENDING', undefined, undefined);
+      expect(result).toEqual(expected);
+    });
+
+    it('returns paginated list with page and limit filters', async () => {
+      const req = { user: { userId: 'user_123' } };
+      const expected = { data: [{ _id: 'charge_1' }], total: 1, totalPages: 1, page: 2, limit: 50 };
+      mockBillingService.listCharges.mockResolvedValue(expected);
+
+      const result = await controller.listCharges(req, undefined, undefined, '2', '50');
+      expect(service.listCharges).toHaveBeenCalledWith('user_123', undefined, undefined, '2', '50');
+      expect(result).toEqual(expected);
+    });
+  });
+
+  describe('getCharge', () => {
+    it('returns charge details', async () => {
+      const expected = { _id: 'charge_1', amount: 100 };
+      mockBillingService.getCharge.mockResolvedValue(expected);
+
+      const result = await controller.getCharge('charge_1');
+      expect(service.getCharge).toHaveBeenCalledWith('charge_1');
       expect(result).toEqual(expected);
     });
   });

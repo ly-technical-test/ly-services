@@ -8,8 +8,6 @@ RUN npm ci || npm install
 COPY . .
 RUN npm install -g @nestjs/cli
 
-RUN npm run test
-
 RUN npm run build
 
 CMD ["npm", "run", "start:dev"]

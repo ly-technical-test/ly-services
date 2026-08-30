@@ -69,6 +69,8 @@ export class BillingService {
       status: 'PENDING',
       lytexId,
       lytexHashId,
+      linkCheckout: resData.linkCheckout,
+      linkBoleto: resData.linkBoleto ?? null,
     });
   }
 
@@ -97,7 +99,7 @@ export class BillingService {
       throw new BadRequestException('missing_lytex_client_id');
     }
 
-    const allowedMethods = ['all', 'cartao', 'creditCard', 'debitCard'];
+    const allowedMethods = ['all', 'cartao', 'creditCard'];
     if (!allowedMethods.includes(charge.paymentMethod)) {
       throw new BadRequestException('payment_method_not_allowed');
     }
@@ -132,7 +134,79 @@ export class BillingService {
     return charge.save();
   }
 
-  async listCharges(userId: string) {
-    return this.chargeModel.find({ user: userId }).sort({ createdAt: -1 }).exec();
+  async listCharges(userId: string, search?: string, status?: string, page?: string, limit?: string) {
+    const filter: any = { user: userId };
+
+    if (status) {
+      filter.status = status;
+    }
+
+    if (search) {
+      const sanitized = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      
+      const customers = await this.customerModel.find({ 
+        user: userId, 
+        name: { $regex: sanitized, $options: 'i' } 
+      }, '_id').exec();
+      const customerIds = customers.map(c => c._id);
+
+      filter.$or = [
+        { description: { $regex: sanitized, $options: 'i' } },
+        { customer: { $in: customerIds } },
+      ];
+    }
+
+    let query = this.chargeModel.find(filter).sort({ createdAt: -1 });
+
+    if (page && limit) {
+      let pageNum = parseInt(page, 10) || 1;
+      let limitNum = parseInt(limit, 10) || 10;
+      
+      if (limitNum > 100) limitNum = 100;
+      if (limitNum < 1) limitNum = 1;
+      if (pageNum < 1) pageNum = 1;
+      
+      const skip = (pageNum - 1) * limitNum;
+      
+      const [data, total] = await Promise.all([
+        query.skip(skip).limit(limitNum).exec(),
+        this.chargeModel.countDocuments(filter).exec()
+      ]);
+      
+      const totalPages = Math.max(1, Math.ceil(total / limitNum));
+      return { data, total, totalPages, page: pageNum, limit: limitNum };
+    }
+
+    return query.exec();
+  }
+
+  async getCharge(chargeId: string) {
+    const charge = await this.chargeModel.findById(chargeId).exec();
+    if (!charge) throw new NotFoundException('charge_not_found');
+
+    let response: any = { ...charge.toObject() };
+    delete response.linkCheckout;
+
+    try {
+      const invoice = await this.lytexApiService.getInvoice(charge.lytexId);
+      const transactions = invoice?.transactions || [];
+
+      const pixTransaction = transactions.find((item: any) => item.pix?.qrcode);
+      if (pixTransaction) {
+        response.pix = { qrcode: pixTransaction.pix.qrcode };
+      }
+
+      const boletoTransaction = transactions.find((item: any) => item.boleto?.barcode);
+      if (boletoTransaction?.boleto) {
+        response.boleto = {
+          barcode: boletoTransaction.boleto.barcode,
+          digitableLine: boletoTransaction.boleto.digitableLine,
+          ...(invoice?.linkBoleto ? { linkBoleto: invoice.linkBoleto } : {}),
+        };
+      }
+    } catch (error) {
+    }
+
+    return response;
   }
 }

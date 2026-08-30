@@ -27,6 +27,12 @@ export class Charge extends Document {
   @Prop({ required: true, maxlength: 255 })
   lytexHashId: string;
 
+  @Prop({ required: false, maxlength: 500 })
+  linkCheckout?: string;
+
+  @Prop({ required: false, maxlength: 500 })
+  linkBoleto?: string;
+
   @Prop({ required: false, maxlength: 255 })
   cardToken?: string;
 

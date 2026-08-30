@@ -59,13 +59,33 @@ describe('CustomersController', () => {
   });
 
   describe('findAll', () => {
-    it('returns customers', async () => {
+    it('returns customers without search', async () => {
       const req = { user: { userId: 'user_123' } };
       const expected = [{ _id: 'cust_1' }];
       mockCustomersService.findAll.mockResolvedValue(expected);
 
       const result = await controller.findAll(req);
-      expect(service.findAll).toHaveBeenCalledWith('user_123');
+      expect(service.findAll).toHaveBeenCalledWith('user_123', undefined, undefined, undefined);
+      expect(result).toEqual(expected);
+    });
+
+    it('returns customers with search', async () => {
+      const req = { user: { userId: 'user_123' } };
+      const expected = [{ _id: 'cust_1' }];
+      mockCustomersService.findAll.mockResolvedValue(expected);
+
+      const result = await controller.findAll(req, 'term');
+      expect(service.findAll).toHaveBeenCalledWith('user_123', 'term', undefined, undefined);
+      expect(result).toEqual(expected);
+    });
+
+    it('returns customers with pagination', async () => {
+      const req = { user: { userId: 'user_123' } };
+      const expected = { data: [{ _id: 'cust_1' }], total: 1, totalPages: 1, page: 1, limit: 10 };
+      mockCustomersService.findAll.mockResolvedValue(expected);
+
+      const result = await controller.findAll(req, undefined, '1', '10');
+      expect(service.findAll).toHaveBeenCalledWith('user_123', undefined, '1', '10');
       expect(result).toEqual(expected);
     });
   });
