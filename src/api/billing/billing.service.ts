@@ -207,6 +207,17 @@ export class BillingService {
     } catch (error) {
     }
 
+    if (response.status === 'PAID') {
+      delete response.cardToken;
+      delete response.cardValidUntil;
+      delete response.lytexId;
+      delete response.lytexHashId;
+      delete response.user;
+      delete response.customer;
+      delete response.pix;
+      delete response.boleto;
+    }
+
     return response;
   }
 }
