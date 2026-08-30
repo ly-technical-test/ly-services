@@ -186,6 +186,10 @@ export class BillingService {
 
     let response: any = { ...charge.toObject() };
     delete response.linkCheckout;
+    delete response.user;
+    delete response.customer;
+    delete response.lytexId;
+    delete response.lytexHashId;
 
     try {
       const invoice = await this.lytexApiService.getInvoice(charge.lytexId);
@@ -209,10 +213,6 @@ export class BillingService {
     if (response.status === 'PAID') {
       delete response.cardToken;
       delete response.cardValidUntil;
-      delete response.lytexId;
-      delete response.lytexHashId;
-      delete response.user;
-      delete response.customer;
       delete response.pix;
       delete response.boleto;
     }
