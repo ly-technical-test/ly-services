@@ -87,6 +87,7 @@ export class BillingService {
     await this.lytexApiService.simulatePayment(charge.lytexId, paymentMethod, charge.amount);
 
     charge.status = 'PAID';
+    charge.paymentMethod = paymentMethod;
     return charge.save();
   }
 
@@ -131,6 +132,7 @@ export class BillingService {
     charge.cardStatus = tokenData.status;
     charge.cardMethod = data.method || tokenData.type || 'creditCard';
     charge.status = 'PAID';
+    charge.paymentMethod = 'creditCard';
     return charge.save();
   }
 
