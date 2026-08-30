@@ -22,8 +22,12 @@ async function bootstrap() {
 
   app.setGlobalPrefix('v1');
 
+  const configService = app.get(ConfigService);
+  const allowedOrigins = configService.getOrThrow<string>('CORS_ORIGIN').split(',');
+
   app.enableCors({
-    origin: '*',
+    origin: allowedOrigins,
+    credentials: true,
   });
 
   app.use((req: any, res: any, next: any) => {
@@ -48,8 +52,6 @@ async function bootstrap() {
   httpAdapter.getInstance().use((req: any, res: any) => {
     res.status(404).json(buildErrorResponse(404, 'not_found', req));
   });
-
-  const configService = app.get(ConfigService);
 
   await app.listen(configService.getOrThrow<number>('API_PORT'));
 }
