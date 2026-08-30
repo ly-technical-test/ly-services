@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, autoIndex: true })
 export class Customer extends Document {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
   user: mongoose.Types.ObjectId;
@@ -31,3 +31,7 @@ export class Customer extends Document {
 }
 
 export const CustomerSchema = SchemaFactory.createForClass(Customer);
+
+CustomerSchema.index({ user: 1, createdAt: -1 });
+CustomerSchema.index({ user: 1, cpfCnpj: 1 });
+CustomerSchema.index({ lytexClientId: 1 });
