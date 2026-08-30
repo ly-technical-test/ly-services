@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, ConflictException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, ConflictException, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -82,6 +82,18 @@ export class LytexApiService {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('[Lytex] Invoice creation failed:', { status: response.status, body: errorText });
+      if (response.status === 400) {
+        const possibleErrors = [
+          { pattern: /emissão com valor mais alto do que o permitido/i, errorKey: 'lytex_invoice_max_value_exceeded' },
+          { pattern: /emissão acima da quantidade permitida/i, errorKey: 'lytex_invoice_limit_exceeded' },
+          { pattern: /emissão não permitida/i, errorKey: 'lytex_invoice_creation_not_allowed' },
+        ];
+
+        const matched = possibleErrors.find(({ pattern }) => pattern.test(errorText));
+        if (matched) {
+          throw new BadRequestException(matched.errorKey);
+        }
+      }
       throw new InternalServerErrorException('lytex_invoice_creation_failed');
     }
     return response.json();
@@ -132,6 +144,9 @@ export class LytexApiService {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('[Lytex] Card tokenization failed:', { status: response.status, body: errorText });
+      if (response.status === 400 && (/cartão digitado errado/i.test(errorText) || /cardNumber/i.test(errorText))) {
+        throw new BadRequestException('lytex_card_invalid');
+      }
       throw new InternalServerErrorException('card_tokenization_failed');
     }
     return response.json();
