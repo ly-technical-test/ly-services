@@ -219,16 +219,24 @@ describe('BillingService', () => {
   });
 
   describe('getCharge', () => {
-    it('throws if charge not found', async () => {
+    it('charge not found', async () => {
       mockChargeModel.findById.mockReturnValue({ exec: jest.fn<any>().mockResolvedValue(null) });
       await expect(service.getCharge('charge_1')).rejects.toThrow(NotFoundException);
     });
 
-    it('returns charge with pix and boleto info', async () => {
+    it('returns public charge details', async () => {
       const chargeDoc = {
         _id: 'charge_1',
         lytexId: 'lytex_1',
-        toObject: () => ({ _id: 'charge_1', linkBoleto: 'http://boleto.link' }),
+        toObject: () => ({
+          _id: 'charge_1',
+          user: 'user_1',
+          customer: 'cust_1',
+          lytexId: 'lytex_1',
+          lytexHashId: 'hash_1',
+          linkCheckout: 'http://checkout.link',
+          linkBoleto: 'http://boleto.link',
+        }),
       };
       mockChargeModel.findById.mockReturnValue({ exec: jest.fn<any>().mockResolvedValue(chargeDoc) });
       
@@ -247,7 +255,11 @@ describe('BillingService', () => {
       expect(result.boleto.barcode).toBe('123');
       expect(result.boleto.digitableLine).toBe('456');
       expect(result.linkBoleto).toBe('http://boleto.link');
-      expect(result.boleto).not.toHaveProperty('linkBoleto');
+      expect(result.user).toBeUndefined();
+      expect(result.customer).toBeUndefined();
+      expect(result.lytexId).toBeUndefined();
+      expect(result.lytexHashId).toBeUndefined();
+      expect(result.linkCheckout).toBeUndefined();
     });
   });
 });
