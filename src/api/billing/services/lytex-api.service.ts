@@ -20,8 +20,7 @@ export class LytexApiService {
     });
 
     if (!response.ok) {
-      const err = await response.text();
-      throw new InternalServerErrorException(`lytex_auth_failed: ${err}`);
+      throw new InternalServerErrorException('lytex_auth_failed');
     }
     const data = (await response.json()) as any;
     return data.accessToken;
@@ -41,8 +40,7 @@ export class LytexApiService {
     if (response.status === 409) throw new ConflictException('lytex_client_already_exists');
 
     if (!response.ok) {
-      const err = await response.text();
-      throw new InternalServerErrorException(`lytex_client_creation_failed: ${err}`);
+      throw new InternalServerErrorException('lytex_client_creation_failed');
     }
     return response.json();
   }
@@ -59,8 +57,7 @@ export class LytexApiService {
     });
 
     if (!response.ok) {
-      const err = await response.text();
-      throw new InternalServerErrorException(`lytex_client_update_failed: ${err}`);
+      throw new InternalServerErrorException('lytex_client_update_failed');
     }
     return response.json();
   }
@@ -77,8 +74,7 @@ export class LytexApiService {
     });
 
     if (!response.ok) {
-      const err = await response.text();
-      throw new InternalServerErrorException(`lytex_invoice_failed: ${err}`);
+      throw new InternalServerErrorException('lytex_invoice_creation_failed');
     }
     return response.json();
   }
@@ -99,8 +95,7 @@ export class LytexApiService {
     });
 
     if (!response.ok) {
-      const err = await response.text();
-      throw new InternalServerErrorException(`lytex_simulation_failed: ${err}`);
+      throw new InternalServerErrorException('lytex_simulation_failed');
     }
     return response.json();
   }
@@ -117,8 +112,7 @@ export class LytexApiService {
     });
 
     if (!response.ok) {
-      const err = await response.text();
-      throw new InternalServerErrorException(`card_tokenization_failed: ${err}`);
+      throw new InternalServerErrorException('card_tokenization_failed');
     }
     return response.json();
   }
@@ -135,8 +129,7 @@ export class LytexApiService {
     });
 
     if (!response.ok) {
-      const err = await response.text();
-      throw new InternalServerErrorException(`card_payment_failed: ${err}`);
+      throw new InternalServerErrorException('card_payment_failed');
     }
     return response.json();
   }
@@ -151,8 +144,7 @@ export class LytexApiService {
     });
 
     if (!response.ok) {
-      const err = await response.text();
-      throw new InternalServerErrorException(`lytex_invoice_fetch_failed: ${err}`);
+      throw new InternalServerErrorException('lytex_invoice_fetch_failed');
     }
     return response.json();
   }

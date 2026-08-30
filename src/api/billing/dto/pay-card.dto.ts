@@ -8,7 +8,7 @@ export class PayCardDto {
 
   @IsNotEmpty({ message: 'invalid_card_number' })
   @IsString({ message: 'invalid_card_number' })
-  @MaxLength(19, { message: 'invalid_card_number' })
+  @MaxLength(20, { message: 'invalid_card_number' })
   cardNumber: string;
 
   @IsNotEmpty({ message: 'invalid_holder' })
