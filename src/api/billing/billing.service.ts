@@ -97,7 +97,7 @@ export class BillingService {
       throw new BadRequestException('missing_lytex_client_id');
     }
 
-    const allowedMethods = ['all', 'cartao', 'creditCard', 'debitCard'];
+    const allowedMethods = ['all', 'cartao', 'creditCard'];
     if (!allowedMethods.includes(charge.paymentMethod)) {
       throw new BadRequestException('payment_method_not_allowed');
     }

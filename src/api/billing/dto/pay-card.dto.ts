@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsIn, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class PayCardDto {
   @IsNotEmpty({ message: 'invalid_charge_id' })
@@ -28,6 +28,7 @@ export class PayCardDto {
 
   @IsOptional()
   @IsString({ message: 'invalid_payment_method' })
+  @IsIn(['creditCard'], { message: 'invalid_payment_method' })
   @MaxLength(20, { message: 'invalid_payment_method' })
   method?: string;
 }
