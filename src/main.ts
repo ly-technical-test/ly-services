@@ -12,6 +12,8 @@ async function bootstrap() {
     logger: ['error', 'debug', 'log', 'warn', 'verbose'],
   });
 
+  app.set('trust proxy', 1);
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
