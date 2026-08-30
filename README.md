@@ -32,7 +32,26 @@ A documentação detalhada (OpenAPI/Swagger) contendo todos os endpoints, parâm
 
 ---
 
-## 4. Execução Local
+## 4. Variáveis de Ambiente
+
+As configurações do serviço devem ser salvas no arquivo `.env`. As chaves necessárias para este microserviço são:
+
+- `APP_NAME`: Nome do microserviço (`ly-services`).
+- `EXTERNAL_PORT`: Porta exposta para a API.
+- `API_PORT`: Porta interna da aplicação NestJS.
+- `ENVIRONMENT`: Ambiente de execução (`development` ou `production`).
+- `DOCKER_SUFFIX`: Sufixo para identificação dos contêineres Docker (`dev` ou `deploy`).
+- `MONGODB_URI`: URL de conexão com o banco de dados MongoDB.
+- `MONGODB_DB_NAME`: Nome do banco de dados a ser utilizado.
+- `JWT_SECRET`: Chave privada para assinatura dos tokens JWT.
+- `LYTEX_BASE_URL`: URL base do ambiente de integração da Lytex.
+- `LYTEX_CLIENT_ID`: Identificador da conta na Lytex.
+- `LYTEX_CLIENT_SECRET`: Segredo de autenticação na Lytex.
+- `CORS_ORIGIN`: Lista de domínios autorizados a realizar requisições.
+
+---
+
+## 5. Execução Local
 
 ### Pré-requisitos
 - Node.js 20+
