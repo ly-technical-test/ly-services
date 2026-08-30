@@ -225,7 +225,11 @@ describe('BillingService', () => {
     });
 
     it('returns charge with pix and boleto info', async () => {
-      const chargeDoc = { _id: 'charge_1', lytexId: 'lytex_1', toObject: () => ({ _id: 'charge_1' }) };
+      const chargeDoc = {
+        _id: 'charge_1',
+        lytexId: 'lytex_1',
+        toObject: () => ({ _id: 'charge_1', linkBoleto: 'http://boleto.link' }),
+      };
       mockChargeModel.findById.mockReturnValue({ exec: jest.fn<any>().mockResolvedValue(chargeDoc) });
       
       const invoice = {
@@ -242,7 +246,8 @@ describe('BillingService', () => {
       expect(result.pix.qrcode).toBe('pix_code');
       expect(result.boleto.barcode).toBe('123');
       expect(result.boleto.digitableLine).toBe('456');
-      expect(result.boleto.linkBoleto).toBe('http://boleto.link');
+      expect(result.linkBoleto).toBe('http://boleto.link');
+      expect(result.boleto).not.toHaveProperty('linkBoleto');
     });
   });
 });

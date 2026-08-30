@@ -201,7 +201,6 @@ export class BillingService {
         response.boleto = {
           barcode: boletoTransaction.boleto.barcode,
           digitableLine: boletoTransaction.boleto.digitableLine,
-          ...(invoice?.linkBoleto ? { linkBoleto: invoice.linkBoleto } : {}),
         };
       }
     } catch (error) {
