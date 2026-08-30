@@ -229,10 +229,11 @@ describe('BillingService', () => {
       mockChargeModel.findById.mockReturnValue({ exec: jest.fn<any>().mockResolvedValue(chargeDoc) });
       
       const invoice = {
-        paymentMethods: {
-          pix: { qrcode: 'pix_code' },
-          boleto: { barcode: '123', digitableLine: '456', ourNumber: '789', qrCode: { emv: 'boleto_pix' } }
-        }
+        linkBoleto: 'http://boleto.link',
+        transactions: [
+          { pix: { qrcode: 'pix_code' } },
+          { boleto: { barcode: '123', digitableLine: '456' } },
+        ],
       };
       mockLytexApiService.getInvoice.mockResolvedValue(invoice);
 
@@ -240,7 +241,8 @@ describe('BillingService', () => {
       expect(mockLytexApiService.getInvoice).toHaveBeenCalledWith('lytex_1');
       expect(result.pix.qrcode).toBe('pix_code');
       expect(result.boleto.barcode).toBe('123');
-      expect(result.boleto.emv).toBe('boleto_pix');
+      expect(result.boleto.digitableLine).toBe('456');
+      expect(result.boleto.linkBoleto).toBe('http://boleto.link');
     });
   });
 });

@@ -69,6 +69,8 @@ export class BillingService {
       status: 'PENDING',
       lytexId,
       lytexHashId,
+      linkCheckout: resData.linkCheckout,
+      linkBoleto: resData.linkBoleto ?? null,
     });
   }
 
@@ -183,24 +185,24 @@ export class BillingService {
     if (!charge) throw new NotFoundException('charge_not_found');
 
     let response: any = { ...charge.toObject() };
+    delete response.linkCheckout;
 
     try {
       const invoice = await this.lytexApiService.getInvoice(charge.lytexId);
-      
-      if (invoice.paymentMethods) {
-        if (invoice.paymentMethods.pix) {
-          response.pix = {
-            qrcode: invoice.paymentMethods.pix.qrcode,
-          };
-        }
-        if (invoice.paymentMethods.boleto) {
-          response.boleto = {
-            barcode: invoice.paymentMethods.boleto.barcode,
-            digitableLine: invoice.paymentMethods.boleto.digitableLine,
-            ourNumber: invoice.paymentMethods.boleto.ourNumber,
-            emv: invoice.paymentMethods.boleto.qrCode?.emv,
-          };
-        }
+      const transactions = invoice?.transactions || [];
+
+      const pixTransaction = transactions.find((item: any) => item.pix?.qrcode);
+      if (pixTransaction) {
+        response.pix = { qrcode: pixTransaction.pix.qrcode };
+      }
+
+      const boletoTransaction = transactions.find((item: any) => item.boleto?.barcode);
+      if (boletoTransaction?.boleto) {
+        response.boleto = {
+          barcode: boletoTransaction.boleto.barcode,
+          digitableLine: boletoTransaction.boleto.digitableLine,
+          ...(invoice?.linkBoleto ? { linkBoleto: invoice.linkBoleto } : {}),
+        };
       }
     } catch (error) {
     }
